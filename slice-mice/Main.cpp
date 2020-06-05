@@ -20,6 +20,9 @@ float last_frame = 0.0f;
 double last_x = 0;
 double last_y = 0;
 
+glm::mat4 projection, view;
+
+
 float unit_cube[] = {
 		-1.0f, -1.0f, -1.0f,
 		 1.0f, -1.0f, -1.0f,
@@ -67,6 +70,9 @@ float unit_cube[] = {
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, int button, int action, int modifier);
+glm::vec3 get_mouse_loc(GLFWwindow* window, float depth);
+
+//remove
 void processInput(GLFWwindow* window);
 
 class Object {
@@ -99,7 +105,7 @@ public:
 		model = glm::mat4(1.0f);
 
 		model = glm::translate(model, translation);
-		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+		//model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
 		//model = glm::scale(model, glm::vec3((float)glfwGetTime() * 0.05));
 
 	}
@@ -107,7 +113,7 @@ public:
 		activate();
 		shader.setMat4("model", model);
 		shader.setVec3("color", glm::vec3(0.463, 0.275, 0.137));
-		glDrawArrays(GL_TRIANGLES, 0, m_num_verts);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
 	void translate(float x, float y, float z) {
 		translation = glm::vec3(x, y, z);
@@ -142,13 +148,27 @@ int main() {
 
 	Shader shader("vertex.glsl", "fragment.glsl");
 
-
 	Object test(unit_cube, 36);
-
 
 	shader.use();
 
-	glm::mat4 projection, view;
+	float verts[] = {
+		0.0f, 0.0f, 2.0f,
+		0.0f, 0.0f, -2.0f
+	};
+
+	unsigned int vao, vbo;
+
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+
+	glBindVertexArray(vao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
 	//								   fov					aspect ratio	  near   far
 	projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
@@ -156,11 +176,11 @@ int main() {
 	shader.setMat4("projection", projection);
 
 	//					    position				  target					up
-	view = glm::lookAt(glm::vec3(5.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+	view = glm::lookAt(glm::vec3(10.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 	shader.setMat4("view", view);
 
 	glEnable(GL_DEPTH_TEST);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	while (!glfwWindowShouldClose(window)) {
 		// calculating deltaT
@@ -172,76 +192,20 @@ int main() {
 
 		glClearColor(background[0], background[1], background[2], 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		
 		shader.use();
 
-		//test.translate(1.5, 0.0, 0.0);
+		glm::vec3 pos1 = get_mouse_loc(window, 10.0f);
+		glm::vec3 pos2 = get_mouse_loc(window, 1.0f);
 
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-		if (last_x != xpos || last_y != ypos) {
-			//std::cout << xpos << ", " << ypos << std::endl;
-		}
-		last_x = xpos;
-		last_y = ypos;
+		shader.setMat4("model", glm::mat4(1.0f));
+		shader.setVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
 
-		float norm_x = (2 * xpos / width) - 1;
-		float norm_y = (2 * ypos / height) - 1;
-
-		float depth = 5.0f * sin(glfwGetTime()) + 10;
-
-		glm::vec4 s_vec = glm::vec4(norm_x * depth, norm_y * depth, 0.0f, depth);
-
-		//std::cout << s_vec[0] << ", " << s_vec[1] << ", " << s_vec[2] << ", " << s_vec[3] << std::endl;
-
-		s_vec = glm::inverse(projection) * s_vec;
-		s_vec[3] = 1.0f;
-		//std::cout << s_vec[0] << ", " << s_vec[1] << ", " << s_vec[2] << ", " << s_vec[3] << std::endl;
+		glDrawArrays(GL_LINES, 0, 2);
 
 
-		s_vec = glm::inverse(view) * s_vec;
-		std::cout << s_vec[0] << ", " << s_vec[1] << ", " << s_vec[2] << ", " << s_vec[3] << std::endl;
-		std::cout << std::endl;
-
-		test.translate(s_vec[0], -s_vec[1], s_vec[2]);
-		
-
-		/*glm::vec4 testing = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		std::cout << testing[0] << ", " << testing[1] << ", " << testing[2] << ", " << testing[3] << std::endl;
-
-		testing = test.get_model() * testing;
-		std::cout << testing[0] << ", " << testing[1] << ", " << testing[2] << ", " << testing[3] << std::endl;
-
-		testing = view * testing;
-		std::cout << testing[0] << ", " << testing[1] << ", " << testing[2] << ", " << testing[3] << std::endl;
-
-
-		testing = projection * testing;
-		std::cout << testing[0] << ", " << testing[1] << ", " << testing[2] << ", " << testing[3] << std::endl;
-
-		
-		glm::vec3 bruh = glm::vec3(testing[0] / testing[3], testing[1] / testing[3], testing[2] / testing[3]);
-
-		float x = bruh[0];
-		float y = bruh[1];
-
-		std::cout << x << ", " << y << ", " << bruh[2] << std::endl;
-
-		x += 1;
-		y += 1;
-		
-		x *= width / 2;
-		y *= height / 2;
-
-		std::cout << x << ", " << y << std::endl;
-
-
-		std::cout << std::endl;*/
-
-
-
-		test.update();
-		test.draw(shader);
+		//test.update();
+		//test.draw(shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -250,6 +214,24 @@ int main() {
 	return 0;
  }
 
+glm::vec3 get_mouse_loc(GLFWwindow* window, float depth) {
+	// obtains mouse screen coords
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+
+	// converts to normalized device coords (-1 to 1)
+	float norm_x = (2 * xpos / width) - 1;
+	float norm_y = (2 * ypos / height) - 1;
+
+	// creates 
+	glm::vec4 s_vec = glm::vec4(norm_x * depth, norm_y * depth, 0.0f, depth);
+	s_vec = glm::inverse(projection) * s_vec;
+	// resets w to 1.0f, depth data lost after going through projection matrix
+	s_vec[3] = 1.0f;
+	s_vec = glm::inverse(view) * s_vec;
+
+	return glm::vec3(s_vec[0], -s_vec[1], s_vec[2]);
+}
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
