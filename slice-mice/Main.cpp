@@ -99,7 +99,7 @@ public:
 		model = glm::mat4(1.0f);
 
 		model = glm::translate(model, translation);
-		//model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
 		//model = glm::scale(model, glm::vec3((float)glfwGetTime() * 0.05));
 
 	}
@@ -175,7 +175,7 @@ int main() {
 
 		shader.use();
 
-		test.translate(1.5, 0.0, 0.0);
+		//test.translate(1.5, 0.0, 0.0);
 
 		double xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
@@ -188,21 +188,25 @@ int main() {
 		float norm_x = (2 * xpos / width) - 1;
 		float norm_y = (2 * ypos / height) - 1;
 
+		float depth = 5.0f * sin(glfwGetTime()) + 10;
 
-		/*glm::vec4 s_vec = glm::vec4(norm_x, norm_y, 0.0f, 1.0f);
+		glm::vec4 s_vec = glm::vec4(norm_x * depth, norm_y * depth, 0.0f, depth);
 
-		std::cout << s_vec[0] << ", " << s_vec[1] << ", " << s_vec[2] << ", " << s_vec[3] << std::endl;
+		//std::cout << s_vec[0] << ", " << s_vec[1] << ", " << s_vec[2] << ", " << s_vec[3] << std::endl;
 
 		s_vec = glm::inverse(projection) * s_vec;
-		std::cout << s_vec[0] << ", " << s_vec[1] << ", " << s_vec[2] << ", " << s_vec[3] << std::endl;
+		s_vec[3] = 1.0f;
+		//std::cout << s_vec[0] << ", " << s_vec[1] << ", " << s_vec[2] << ", " << s_vec[3] << std::endl;
+
 
 		s_vec = glm::inverse(view) * s_vec;
 		std::cout << s_vec[0] << ", " << s_vec[1] << ", " << s_vec[2] << ", " << s_vec[3] << std::endl;
-		std::cout << std::endl;*/
+		std::cout << std::endl;
 
+		test.translate(s_vec[0], -s_vec[1], s_vec[2]);
 		
 
-		glm::vec4 testing = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		/*glm::vec4 testing = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		std::cout << testing[0] << ", " << testing[1] << ", " << testing[2] << ", " << testing[3] << std::endl;
 
 		testing = test.get_model() * testing;
@@ -221,7 +225,7 @@ int main() {
 		float x = bruh[0];
 		float y = bruh[1];
 
-		std::cout << x << ", " << y << std::endl;
+		std::cout << x << ", " << y << ", " << bruh[2] << std::endl;
 
 		x += 1;
 		y += 1;
@@ -232,7 +236,7 @@ int main() {
 		std::cout << x << ", " << y << std::endl;
 
 
-		std::cout << std::endl;
+		std::cout << std::endl;*/
 
 
 
