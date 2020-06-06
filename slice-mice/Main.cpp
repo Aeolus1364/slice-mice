@@ -89,10 +89,14 @@ void processInput(GLFWwindow* window);
 class Object {
 	unsigned int m_VAO, m_VBO;
 	unsigned int m_num_verts;
+	bool m_rotate = false;
+
 	glm::mat4 m_model = glm::mat4(1.0f);
 
 	glm::vec3 m_translation = glm::vec3(0.0f);
 	glm::vec3 m_scale = glm::vec3(1.0f);
+
+	glm::vec3 m_color = glm::vec3(0.463f, 0.275f, 0.137f);
 
 public:
 	Object(float * verts, unsigned int num_verts) {
@@ -116,18 +120,29 @@ public:
 		m_model = glm::mat4(1.0f);
 
 		m_model = glm::translate(m_model, m_translation);
-		m_model = glm::rotate(m_model, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3((float)glfwGetTime() * 0.05));
+		if (m_rotate) {
+			m_model = glm::rotate(m_model, (float)glfwGetTime() / 3, glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+		m_model = glm::scale(m_model, m_scale);
 
 	}
 	void draw(Shader shader) {
 		activate();
 		shader.setMat4("model", m_model);
-		shader.setVec3("color", glm::vec3(0.463, 0.275, 0.137));
+		shader.setVec3("color", m_color);
 		glDrawArrays(GL_TRIANGLES, 0, m_num_verts);
 	}
 	void translate(glm::vec3 translate) {
 		m_translation = translate;
+	}
+	void scale(glm::vec3 scale) {
+		m_scale = scale;
+	}
+	void color(glm::vec3 color) {
+		m_color = color;
+	}
+	void rotate(bool r) {
+		m_rotate = r;
 	}
 	glm::mat4 get_model() {
 		return m_model;
@@ -162,7 +177,7 @@ public:
 		m_model = glm::mat4(1.0f);
 
 		m_model = glm::translate(m_model, m_translation);
-		m_model = glm::scale(m_model, glm::vec3(4.0f));
+		m_model = glm::scale(m_model, glm::vec3(10.0f));
 	}
 	void draw(Shader shader) {
 		activate();
@@ -207,6 +222,15 @@ int main() {
 
 	shader.use();
 
+	glm::vec4 a = glm::vec4(triangle[0], triangle[1], triangle[2], 0.0f);
+	glm::vec4 b = glm::vec4(triangle[3], triangle[4], triangle[5], 0.0f);
+	glm::vec4 c = glm::vec4(triangle[6], triangle[7], triangle[8], 0.0f);
+	
+
+	glm::vec3 v = glm::vec3(-1.0f, 0.0f, 0.0f);
+
+
+
 	//								   fov					aspect ratio	  near   far
 	projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
 	//projection = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, 0.1f, 100.0f);
@@ -232,7 +256,26 @@ int main() {
 		
 		shader.use();
 
-		glm::vec3 pos = get_mouse_loc(window, 3.0f);
+		tri.rotate(true);
+		tri.scale(glm::vec3(2.0f));
+		tri.update();
+
+		glm::mat4 trimodel = tri.get_model();
+		
+		glm::vec3 a_world = trimodel * a;
+		glm::vec3 b_world = trimodel * b;
+		glm::vec3 c_world = trimodel * c;
+
+		glm::vec3 ab = b_world - a_world;
+		glm::vec3 ac = c_world - a_world;
+		glm::vec3 n = glm::cross(ab, ac);
+
+		glm::vec3 pos = get_mouse_loc(window, 2.5f);
+
+		glm::vec3 w = pos - c_world;
+
+		glm::vec3 intersect = pos + (glm::dot(w, n) / glm::dot(v, n)) * v;
+		std::cout << intersect[0] << ", " << intersect[1] << ", " << intersect[2] << std::endl;
 
 
 		ln.translate(pos);
@@ -240,8 +283,14 @@ int main() {
 		ln.update();
 		ln.draw(shader);
 
-		//tri.update();
-		//tri.draw(shader);
+		
+		tri.draw(shader);
+
+		test.rotate(true);
+
+		test.translate(glm::vec3(5 - intersect[0], intersect[1], intersect[2]));
+		test.scale(glm::vec3(0.25));
+		test.color(glm::vec3(1.0f));
 
 		test.update();
 		test.draw(shader);
@@ -279,10 +328,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void mouse_callback(GLFWwindow* window, int button, int action, int modifier) {
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	std::cout << xpos << ", " << ypos << std::endl;
 
 	if (action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_1) {
-		std::cout << "cringe" << std::endl;
 	}
 }
 
