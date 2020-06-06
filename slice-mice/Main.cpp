@@ -67,6 +67,12 @@ float unit_cube[] = {
 		-0.5f,  0.5f, -0.5f
 };
 
+float triangle[] = {
+	0.0f, 1.0f, 0.0f,
+	0.0f, 0.0f, 0.5f,
+	0.0f, 0.0f, -0.5f
+};
+
 float unit_line[] = {
 	0.0f, 0.0f, 0.0f,
 	-1.0f, 0.0f, 0.0f
@@ -118,7 +124,7 @@ public:
 		activate();
 		shader.setMat4("model", m_model);
 		shader.setVec3("color", glm::vec3(0.463, 0.275, 0.137));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDrawArrays(GL_TRIANGLES, 0, m_num_verts);
 	}
 	void translate(glm::vec3 translate) {
 		m_translation = translate;
@@ -196,6 +202,7 @@ int main() {
 	Shader shader("vertex.glsl", "fragment.glsl");
 
 	Object test(unit_cube, 36);
+	Object tri(triangle, 9);
 	Line ln(unit_line);
 
 	shader.use();
@@ -232,6 +239,9 @@ int main() {
 
 		ln.update();
 		ln.draw(shader);
+
+		//tri.update();
+		//tri.draw(shader);
 
 		test.update();
 		test.draw(shader);
