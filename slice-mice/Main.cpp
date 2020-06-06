@@ -9,8 +9,8 @@
 
 #include "shader.h"
 
-const int width = 800;
-const int height = 600;
+const int width = 1920;
+const int height = 1080;
 
 const float background[] = {0.647f, 0.533f, 0.333f};
 
@@ -196,7 +196,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(width, height, "Slice Mice", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(width, height, "Slice Mice", glfwGetPrimaryMonitor(), NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
