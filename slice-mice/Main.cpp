@@ -24,47 +24,52 @@ glm::mat4 projection, view;
 
 
 float unit_cube[] = {
-		-1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,
+		-0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
 
-		-1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
+		-0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,
 
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f, -1.0f,
-		-1.0f, -1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
+		-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,
 
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
+		 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
 
-		-1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f, -1.0f,
-		 1.0f, -1.0f,  1.0f,
-		 1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f,  1.0f,
-		-1.0f, -1.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f, -0.5f,
+		 0.5f, -0.5f,  0.5f,
+		 0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f, -0.5f,
 
-		-1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f, -1.0f,
-		 1.0f,  1.0f,  1.0f,
-		 1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f,  1.0f,
-		-1.0f,  1.0f, -1.0f
+		-0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f, -0.5f,
+		 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f
+};
+
+float unit_line[] = {
+	0.0f, 0.0f, 0.0f,
+	-1.0f, 0.0f, 0.0f
 };
 
 
@@ -76,53 +81,93 @@ glm::vec3 get_mouse_loc(GLFWwindow* window, float depth);
 void processInput(GLFWwindow* window);
 
 class Object {
-	unsigned int VAO, VBO;
+	unsigned int m_VAO, m_VBO;
 	unsigned int m_num_verts;
-	glm::mat4 model = glm::mat4(1.0f);
+	glm::mat4 m_model = glm::mat4(1.0f);
 
-	glm::vec3 translation = glm::vec3(0.0f);
-	glm::vec3 scale = glm::vec3(1.0f);
+	glm::vec3 m_translation = glm::vec3(0.0f);
+	glm::vec3 m_scale = glm::vec3(1.0f);
 
 public:
 	Object(float * verts, unsigned int num_verts) {
 		m_num_verts = num_verts;
 
-		glGenVertexArrays(1, &VAO);
-		glGenBuffers(1, &VBO);
+		glGenVertexArrays(1, &m_VAO);
+		glGenBuffers(1, &m_VBO);
 
 		activate();
 
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
 		glBufferData(GL_ARRAY_BUFFER, m_num_verts * 3 * sizeof(float), verts, GL_STATIC_DRAW);
 
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
 	}
 	void activate() {
-		glBindVertexArray(VAO);
+		glBindVertexArray(m_VAO);
 	}
 	void update() {
-		model = glm::mat4(1.0f);
+		m_model = glm::mat4(1.0f);
 
-		model = glm::translate(model, translation);
-		//model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, 0.0f, 0.0f));
+		m_model = glm::translate(m_model, m_translation);
+		m_model = glm::rotate(m_model, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
 		//model = glm::scale(model, glm::vec3((float)glfwGetTime() * 0.05));
 
 	}
 	void draw(Shader shader) {
 		activate();
-		shader.setMat4("model", model);
+		shader.setMat4("model", m_model);
 		shader.setVec3("color", glm::vec3(0.463, 0.275, 0.137));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 	}
-	void translate(float x, float y, float z) {
-		translation = glm::vec3(x, y, z);
+	void translate(glm::vec3 translate) {
+		m_translation = translate;
 	}
 	glm::mat4 get_model() {
-		return model;
+		return m_model;
 	}
 };
 
+class Line {
+	unsigned int m_VAO, m_VBO;
+	glm::mat4 m_model;
+
+	glm::vec3 m_translation = glm::vec3(-1.0, -1.0, 1.0);
+
+public:
+	Line(float * verts) {
+		glGenVertexArrays(1, &m_VAO);
+		glGenBuffers(1, &m_VBO);
+		
+		activate();
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
+		glBufferData(GL_ARRAY_BUFFER, 24, verts, GL_STATIC_DRAW);
+
+		std::cout << sizeof(verts) << std::endl;
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0);
+	}
+	void activate() {
+		glBindVertexArray(m_VAO);
+	}
+	void update() {
+		m_model = glm::mat4(1.0f);
+
+		m_model = glm::translate(m_model, m_translation);
+		m_model = glm::scale(m_model, glm::vec3(4.0f));
+	}
+	void draw(Shader shader) {
+		activate();
+		shader.setMat4("model", m_model);
+		shader.setVec3("color", glm::vec3(1.0, 1.0, 1.0));
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+	void translate(glm::vec3 translate) {
+		m_translation = translate;
+	}
+};
 
 int main() {
 	glfwInit();
@@ -141,6 +186,8 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetMouseButtonCallback(window, mouse_callback);
 
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
@@ -149,26 +196,9 @@ int main() {
 	Shader shader("vertex.glsl", "fragment.glsl");
 
 	Object test(unit_cube, 36);
+	Line ln(unit_line);
 
 	shader.use();
-
-	float verts[] = {
-		0.0f, 0.0f, 2.0f,
-		0.0f, 0.0f, -2.0f
-	};
-
-	unsigned int vao, vbo;
-
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-
-	glBindVertexArray(vao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
 
 	//								   fov					aspect ratio	  near   far
 	projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
@@ -176,11 +206,11 @@ int main() {
 	shader.setMat4("projection", projection);
 
 	//					    position				  target					up
-	view = glm::lookAt(glm::vec3(10.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+	view = glm::lookAt(glm::vec3(5.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 	shader.setMat4("view", view);
 
 	glEnable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	while (!glfwWindowShouldClose(window)) {
 		// calculating deltaT
@@ -195,17 +225,16 @@ int main() {
 		
 		shader.use();
 
-		glm::vec3 pos1 = get_mouse_loc(window, 10.0f);
-		glm::vec3 pos2 = get_mouse_loc(window, 1.0f);
-
-		shader.setMat4("model", glm::mat4(1.0f));
-		shader.setVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
-
-		glDrawArrays(GL_LINES, 0, 2);
+		glm::vec3 pos = get_mouse_loc(window, 3.0f);
 
 
-		//test.update();
-		//test.draw(shader);
+		ln.translate(pos);
+
+		ln.update();
+		ln.draw(shader);
+
+		test.update();
+		test.draw(shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
