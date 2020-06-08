@@ -26,7 +26,51 @@ glm::mat4 projection, view;
 
 
 float unit_cube[] = {
-		-0.5f, -0.5f, -0.5f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+};
+
+float unit_cube_no_normals[] = {
+			-0.5f, -0.5f, -0.5f,
 		 0.5f, -0.5f, -0.5f,
 		 0.5f,  0.5f, -0.5f,
 		 0.5f,  0.5f, -0.5f,
@@ -174,23 +218,18 @@ public:
 		activate();
 
 		glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-		glBufferData(GL_ARRAY_BUFFER, m_num_verts * 3 * sizeof(float), verts, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, num_verts * 6 * sizeof(float), verts, GL_STATIC_DRAW);
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(0);
+
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
 
 		m_num_polys = m_num_verts / 3;
 
-		std::cout << "Num verts: " << m_num_verts << std::endl;
-		std::cout << "Num polys: " << m_num_polys << std::endl;
-
 		for (unsigned int i = 0; i < m_num_polys; ++i) {
-			std::cout << "Generated triangle " << i << std::endl;
 			float* v_chunk = verts + i * 9;
-			std::cout << "P1: " << v_chunk[0] << ", " << v_chunk[1] << ", " << v_chunk[2] << std::endl;
-			std::cout << "P2: " << v_chunk[3] << ", " << v_chunk[4] << ", " << v_chunk[5] << std::endl;
-			std::cout << "P3: " << v_chunk[6] << ", " << v_chunk[7] << ", " << v_chunk[8] << std::endl;
-
 			m_polys[i] = Triangle(v_chunk, &m_model);
 		}
 
@@ -203,7 +242,7 @@ public:
 
 		m_model = glm::translate(m_model, m_translation);
 		if (m_rotate) {
-			m_model = glm::rotate(m_model, (float)glfwGetTime() / 3, glm::vec3(0.0f, 1.0f, 0.0f));
+			m_model = glm::rotate(m_model, (float)glfwGetTime() / 2, glm::vec3(0.0f, 1.0f, 0.0f));
 		}
 		//m_model = glm::rotate(m_model, 0.5f, glm::vec3(0.0f, 1.0f, 0.0f));
 		m_model = glm::scale(m_model, m_scale);
@@ -211,8 +250,9 @@ public:
 	}
 	void draw(Shader shader) {
 		activate();
+		shader.use();
 		shader.setMat4("model", m_model);
-		shader.setVec3("color", m_color);
+		shader.setVec3("objectColor", m_color);
 		glDrawArrays(GL_TRIANGLES, 0, m_num_verts);
 	}
 	bool intersect(glm::vec3 ray_pos, glm::vec3 ray_vector) {
@@ -274,8 +314,9 @@ public:
 	}
 	void draw(Shader shader) {
 		activate();
+		shader.use();
 		shader.setMat4("model", m_model);
-		shader.setVec3("color", glm::vec3(1.0, 1.0, 1.0));
+		shader.setVec3("objectColor", glm::vec3(1.0, 1.0, 1.0));
 		glDrawArrays(GL_LINES, 0, 2);
 	}
 	void translate(glm::vec3 translate) {
@@ -307,7 +348,8 @@ int main() {
 		return -1;
 	}
 
-	Shader shader("vertex.glsl", "fragment.glsl");
+	Shader object_shader("vertex.glsl", "fragment.glsl");
+	Shader lamp_shader("lamp_vertex.glsl", "lamp_fragment.glsl");
 
 	float quad_verts[] = {
 		0.0f, -1.0f, 1.0f,
@@ -319,22 +361,46 @@ int main() {
 		0.0f, 1.0f, 1.0f
 	};
 
-	Object quad(unit_cube, 36);
-
-	Line ln(unit_line);
-
-	shader.use();
-	
-
 	glm::vec3 ray_vector = glm::vec3(-1.0f, 0.0f, 0.0f);
+	glm::vec3 lamp_color = glm::vec3(1.0f, 1.0f, 1.0f);
+	glm::vec3 lamp_pos = glm::vec3(1.0f, 1.0f, 1.0f);
 
 	//								   fov					aspect ratio	  near   far
 	projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
-	shader.setMat4("projection", projection);
 
 	//					    position				  target					up
 	view = glm::lookAt(glm::vec3(5.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
-	shader.setMat4("view", view);
+
+	Object quad(unit_cube, 36);
+	Line ln(unit_line);
+
+	unsigned int lampVAO, lampVBO;
+	glGenVertexArrays(1, &lampVAO);
+	glGenBuffers(1, &lampVBO);
+
+	glBindVertexArray(lampVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, lampVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(unit_cube_no_normals), unit_cube_no_normals, GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	
+
+	lamp_shader.use();
+
+	lamp_shader.setMat4("projection", projection);
+	lamp_shader.setMat4("view", view);
+
+	
+	object_shader.use();
+	
+	object_shader.setVec3("lampColor", lamp_color);
+	object_shader.setMat4("projection", projection);
+	object_shader.setMat4("view", view);
+	object_shader.setVec3("lightPos", lamp_pos);
+
 
 	glEnable(GL_DEPTH_TEST);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -350,18 +416,31 @@ int main() {
 		glClearColor(background[0], background[1], background[2], 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		shader.use();
-			
 		glm::vec3 ray_pos = get_mouse_loc(window, 3.0f);
-			
+
+		lamp_pos = ray_pos;
+
+		lamp_shader.use();
+		glm::mat4 lamp_model = glm::mat4(1.0f);
+		lamp_model = glm::translate(lamp_model, lamp_pos);
+		lamp_model = glm::scale(lamp_model, glm::vec3(0.25f));
+		lamp_shader.setMat4("model", lamp_model);
+
+		glBindVertexArray(lampVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		object_shader.use();
+		object_shader.setVec3("lightPos", lamp_pos);
+
+
 		quad.rotate(true);
 
 		ln.translate(ray_pos);
 		ln.update();
-		ln.draw(shader);
+		ln.draw(lamp_shader);
 
 		quad.update();
-		quad.draw(shader);
+		quad.draw(object_shader);
 
 
 		glfwSwapBuffers(window);
