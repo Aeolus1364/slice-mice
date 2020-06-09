@@ -258,7 +258,7 @@ public:
 class Line {
 	unsigned int m_line_VAO, m_line_VBO;
 	unsigned int m_plane_VAO, m_plane_VBO;
-	glm::mat4 m_model;
+	glm::mat4 m_model = glm::mat4(1.0f);
 	glm::vec3 m_color = glm::vec3(1.0f);
 
 	glm::vec3 ray_vector = glm::vec3(-1.0f, 0.0f, 0.0f);
@@ -273,6 +273,7 @@ class Line {
 public:
 	Line(float* verts) {
 		// line set up
+
 		glGenVertexArrays(1, &m_line_VAO);
 		glGenBuffers(1, &m_line_VBO);
 
@@ -287,24 +288,24 @@ public:
 		// plane set up
 
 
-		glGenVertexArrays(1, &m_plane_VAO);
-		glGenBuffers(1, &m_plane_VBO);
+		//glGenVertexArrays(1, &m_plane_VAO);
+		//glGenBuffers(1, &m_plane_VBO);
 
-		glBindVertexArray(m_plane_VAO);
+		//glBindVertexArray(m_plane_VAO);
 
-		gen_quad();
+		////gen_quad();
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_plane_VBO);
-		glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), verts, GL_DYNAMIC_DRAW);
+		//glBindBuffer(GL_ARRAY_BUFFER, m_plane_VBO);
+		//glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), verts, GL_DYNAMIC_DRAW);
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0);
+		//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		//glEnableVertexAttribArray(0);
 	}
 	void update() {
 		m_model = glm::mat4(1.0f);
 
-		m_model = glm::translate(m_model, current_pos);
-		m_model = glm::scale(m_model, glm::vec3(4.0f));
+		m_model = glm::translate(m_model, glm::vec3(0.0f));
+		//m_model = glm::scale(m_model, glm::vec3(4.0f));
 	}
 	void draw(Shader shader) {
 		shader.use();
@@ -318,14 +319,14 @@ public:
 	void set_color(glm::vec3 color) {
 		m_color = color;
 	}
-	void gen_quad(float* verts, glm::vec3 coords[4]) {
+	/*void gen_quad(float* verts, glm::vec3 coords[4]) {
 		verts[0]  = coords[0][0]; verts[1]  = coords[0][1]; verts[2]  = coords[0][2];
 		verts[3]  = coords[1][0]; verts[4]  = coords[1][1]; verts[5]  = coords[1][2];
 		verts[6]  = coords[2][0]; verts[7]  = coords[2][1]; verts[8]  = coords[2][2];
 		verts[9]  = coords[1][0]; verts[10] = coords[1][1]; verts[11] = coords[1][2];
 		verts[12] = coords[2][0]; verts[13] = coords[2][1]; verts[14] = coords[2][2];
 		verts[15] = coords[3][0]; verts[16] = coords[3][1]; verts[17] = coords[3][2];
-	}
+	}*/
 
 	void pin() {
 		pinned = true;
@@ -333,5 +334,8 @@ public:
 	}
 	void unpin() {
 		pinned = false;
+	}
+	glm::vec3 get_pos() {
+		return current_pos;
 	}
 };

@@ -23,6 +23,8 @@ double last_y = 0;
 
 bool pressed = false;
 bool last_pressed = false;
+bool click = false;
+bool unclick = false;
 
 glm::mat4 projection, view;
 
@@ -91,7 +93,6 @@ glm::vec3 coords[4] = {
 };
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, int button, int action, int modifier);
 glm::vec3 get_mouse_loc(GLFWwindow* window, float depth);
 float mag(glm::vec3 vector);
 void gen_quad(float* verts, glm::vec3 coords[4]);
@@ -115,9 +116,8 @@ int main() {
 
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetMouseButtonCallback(window, mouse_callback);
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << std::endl;
@@ -155,9 +155,9 @@ int main() {
 	object_shader.setMat4("view", view);
 	object_shader.setVec3("lightPos", lamp_pos);
 
-	float test_verts[18];
+	//float test_verts[18];
 
-	gen_quad(test_verts, coords);
+	/*gen_quad(test_verts, coords);
 
 	unsigned int VAO, VBO;
 	glGenVertexArrays(1, &VAO);
@@ -169,7 +169,7 @@ int main() {
 	glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), test_verts, GL_DYNAMIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(0);*/
 
 
 	glEnable(GL_DEPTH_TEST);
@@ -180,6 +180,11 @@ int main() {
 		float current_frame = glfwGetTime();
 		delta = current_frame - last_frame;
 		last_frame = current_frame;
+
+		last_pressed = pressed;
+		pressed = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1);
+		click = (pressed && !last_pressed);
+		unclick = (!pressed && last_pressed);
 
 		processInput(window);
 
@@ -196,23 +201,30 @@ int main() {
 			coords[1] = ray_pos + 4.0f * ray_vector;
 		}
 
-		bool intersect = quad.intersect(ray_pos, ray_vector);
+		//bool intersect = quad.intersect(ray_pos, ray_vector);
 
+		/*if (pressed != last_pressed) {
+			std::cout << "update" << std::endl;
+		}*/
+
+		//glBindVertexArray(VAO);
 		
+		//gen_quad(test_verts, coords);
+		//glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), test_verts, GL_DYNAMIC_DRAW);
 
-		glBindVertexArray(VAO);
-		
-		gen_quad(test_verts, coords);
-		glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), test_verts, GL_DYNAMIC_DRAW);
-
-		lamp_shader.use();
+		/*lamp_shader.use();
 		lamp_shader.setVec3("color", glm::vec3(1.0f));
-		lamp_shader.setMat4("model", glm::mat4(1.0f));
-		if (pressed)
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+		lamp_shader.setMat4("model", glm::mat4(1.0f));*/
+		/*if (pressed)
+			glDrawArrays(GL_TRIANGLES, 0, 6);*/
 
-		lamp.update();
-		lamp.draw(lamp_shader);
+		if (click)
+			std::cout << "click" << std::endl;
+		if (unclick)
+			std::cout << "unclick" << std::endl;
+
+		/*lamp.update();
+		lamp.draw(lamp_shader);*/
 
 		object_shader.use();
 		object_shader.setVec3("lightPos", lamp_pos);
@@ -224,12 +236,16 @@ int main() {
 			ln.set_color(glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 
-		ln.translate(ray_pos);
+		print_vec(ray_pos);
+
+		ln.update_pos(ray_pos);
 		ln.update();
 		ln.draw(lamp_shader);
 
-		quad.update();
-		quad.draw(object_shader);
+		print_vec(ln.get_pos());
+
+		//quad.update();
+		//quad.draw(object_shader);
 
 
 		glfwSwapBuffers(window);
@@ -260,16 +276,6 @@ glm::vec3 get_mouse_loc(GLFWwindow* window, float depth) {
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
-}
-
-void mouse_callback(GLFWwindow* window, int button, int action, int modifier) {
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-
-	if (button == GLFW_MOUSE_BUTTON_1) {
-		last_pressed = pressed;
-		pressed = (action == GLFW_PRESS);
-	}
 }
 
 void processInput(GLFWwindow* window) {
