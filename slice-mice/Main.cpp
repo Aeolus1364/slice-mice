@@ -212,7 +212,7 @@ int main() {
 		object_shader.use();
 		object_shader.setVec3("lightPos", lamp_pos);
 
-		obj.rotate(true);
+		//obj.rotate(true);
 		obj.update();
 		obj.draw(object_shader);
 

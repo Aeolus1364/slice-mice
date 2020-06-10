@@ -149,15 +149,22 @@ public:
 
 		glm::vec3 ln_vec = glm::cross(p_norm, m_norm);
 		
-		int axis;
-		for (axis = 0; axis < 3; axis++) {
-			if (ln_vec[axis] != 0) {
-				break;
-			}
+		float ax, ay;
+
+		if (ln_vec[0] != 0) {
+			ax = ln_vec[1];
+			ay = ln_vec[2];
+		} else if (ln_vec[1] != 0) {
+			ax = ln_vec[0];
+			ay = ln_vec[2];
+		} else if (ln_vec[2] != 0) {
+			ax = ln_vec[0];
+			ay = ln_vec[1];
 		}
 
 		std::cout << ln_vec[0] << " " << ln_vec[1] << " " << ln_vec[2] << std::endl;
-		std::cout << axis << std::endl;
+		std::cout << ax << " " << ay << std::endl;
+
 
 		return true;
 	}
