@@ -74,9 +74,9 @@ float unit_cube[] = {
 };
 
 float triangle[] = {
-	0.0f, 1.0f, 0.5f,
-	0.0f, 0.0f, 0.5f,
-	0.0f, 0.0f, -0.5f
+	0.0f, 1.0f, 0.5f, 1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, 0.5f, 1.0f, 0.0f, 0.0f,
+	0.0f, 0.0f, -0.5f, 1.0f, 0.0f, 0.0f
 };
 
 float unit_line[] = {
@@ -95,7 +95,6 @@ glm::vec3 coords[4] = {
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 glm::vec3 get_mouse_loc(GLFWwindow* window, float depth);
 float mag(glm::vec3 vector);
-void gen_quad(float* verts, glm::vec3 coords[4]);
 void print_vec(glm::vec3 vector);
 
 //remove
@@ -117,7 +116,7 @@ int main() {
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << std::endl;
@@ -136,9 +135,10 @@ int main() {
 	//					    position				  target					up
 	view = glm::lookAt(glm::vec3(5.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 
-	Object quad(unit_cube, 36);
-	Line ln(unit_line);
+	Object obj(unit_cube, 36);
 	Lamp lamp;
+	Line ln(unit_line);
+
 
 	lamp.translate(lamp_pos);
 
@@ -154,22 +154,6 @@ int main() {
 	object_shader.setMat4("projection", projection);
 	object_shader.setMat4("view", view);
 	object_shader.setVec3("lightPos", lamp_pos);
-
-	//float test_verts[18];
-
-	/*gen_quad(test_verts, coords);
-
-	unsigned int VAO, VBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), test_verts, GL_DYNAMIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);*/
 
 
 	glEnable(GL_DEPTH_TEST);
@@ -193,60 +177,44 @@ int main() {
 		
 		glm::vec3 ray_pos = get_mouse_loc(window, 3.0f);
 
-		if (pressed) {
-			coords[2] = ray_pos;
-			coords[3] = ray_pos + 4.0f * ray_vector;
+		// calculates intersection of user controller ray with object
+		if (obj.line_intersect(ray_pos, ray_vector)) {
+			obj.color(glm::vec3(0.0f, 1.0f, 0.0f));
+			// still unpins if plane ended in cube, but sends a failure message
+			if (unclick) {
+				ln.unpin(false);
+			}
 		} else {
-			coords[0] = ray_pos;
-			coords[1] = ray_pos + 4.0f * ray_vector;
+			// cutting plane can only start and end outside of the cube
+			if (click) {
+				ln.pin();
+			}
+			if (unclick) {
+				ln.unpin(true);
+			}
+			obj.color(glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 
-		//bool intersect = quad.intersect(ray_pos, ray_vector);
-
-		/*if (pressed != last_pressed) {
-			std::cout << "update" << std::endl;
-		}*/
-
-		//glBindVertexArray(VAO);
-		
-		//gen_quad(test_verts, coords);
-		//glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), test_verts, GL_DYNAMIC_DRAW);
-
-		/*lamp_shader.use();
-		lamp_shader.setVec3("color", glm::vec3(1.0f));
-		lamp_shader.setMat4("model", glm::mat4(1.0f));*/
-		/*if (pressed)
-			glDrawArrays(GL_TRIANGLES, 0, 6);*/
-
-		if (click)
-			std::cout << "click" << std::endl;
-		if (unclick)
-			std::cout << "unclick" << std::endl;
-
-		/*lamp.update();
-		lamp.draw(lamp_shader);*/
-
-		object_shader.use();
-		object_shader.setVec3("lightPos", lamp_pos);
-
-
-		quad.rotate(true);
-
-		if (pressed) {
-			ln.set_color(glm::vec3(1.0f, 0.0f, 0.0f));
+		if (ln.is_cut_ready()) {
+			std::pair<glm::vec3, glm::vec3> plane;
+			plane = ln.cut_plane();
+			obj.plane_intersect(plane.first, plane.second);
 		}
 
-		print_vec(ray_pos);
+		lamp.update();
+		lamp.draw(lamp_shader);
+
 
 		ln.update_pos(ray_pos);
 		ln.update();
 		ln.draw(lamp_shader);
 
-		print_vec(ln.get_pos());
+		object_shader.use();
+		object_shader.setVec3("lightPos", lamp_pos);
 
-		//quad.update();
-		//quad.draw(object_shader);
-
+		obj.rotate(true);
+		obj.update();
+		obj.draw(object_shader);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
