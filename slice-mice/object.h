@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
 
@@ -144,29 +146,108 @@ public:
 		// normal vector calculated by crossing two triangle vectors
 		m_norm = glm::cross(ca, ab);
 	}
-	bool plane_intersection(glm::vec3 p_pos, glm::vec3 p_norm) {
+	glm::vec3 plane_intersection(glm::vec3 p_pos, glm::vec3 p_norm) {
 		update();
 
+		// first calculating the line described by the two plane's intersections
+
+		// the vector describing this line is just the cross of each plane's norm
 		glm::vec3 ln_vec = glm::cross(p_norm, m_norm);
 		
-		float ax, ay;
+		// in order to find a point describing the line, one of the dimensions is set to zero
+		// this means that we are looking for the point on the line where that dimension is equal to zero
+		// that can only be the case if the corresponding component of the vector is nonzero
+		
+		// if the vector is (1, 3, 0), we can set the x axis to zero and solve for y and z
+		// the axis set to zero will be called axis0, and the axes we are solving for are called axis1 and axis2
+		
+		int axis0, axis1, axis2;
 
 		if (ln_vec[0] != 0) {
-			ax = ln_vec[1];
-			ay = ln_vec[2];
+			axis0 = 0;
+			axis1 = 1;
+			axis2 = 2;
 		} else if (ln_vec[1] != 0) {
-			ax = ln_vec[0];
-			ay = ln_vec[2];
+			axis0 = 1;
+			axis1 = 0;
+			axis2 = 2;
 		} else if (ln_vec[2] != 0) {
-			ax = ln_vec[0];
-			ay = ln_vec[1];
+			axis0 = 2;
+			axis1 = 0;
+			axis2 = 1;
 		}
 
-		std::cout << ln_vec[0] << " " << ln_vec[1] << " " << ln_vec[2] << std::endl;
-		std::cout << ax << " " << ay << std::endl;
+		/*std::cout << ln_vec[0] << " " << ln_vec[1] << " " << ln_vec[2] << std::endl;
+		std::cout << axis0 << " axis set to zero, " << axis1 << " and " << axis2 << " will be used" << std::endl;*/
 
 
-		return true;
+		// set up for finding point on line
+		
+		// vec2s created out of each plane's position and normal, ommitting the axis0
+		glm::vec2 pnt1 = glm::vec2(p_pos[axis1], p_pos[axis2]);
+		glm::vec2 vec1 = glm::vec2(p_norm[axis1], p_norm[axis2]);
+		glm::vec2 pnt2 = glm::vec2(a_world[axis1], a_world[axis2]);
+		glm::vec2 vec2 = glm::vec2(m_norm[axis1], m_norm[axis2]);
+
+		/*pnt1 = glm::vec2(-3.0f, 5.0f);
+		vec1 = glm::vec2(2.0f, 5.0f);
+		pnt2 = glm::vec2(4.0f, 3.0f);
+		vec2 = glm::vec2(-1.0f, 8.0f);*/
+
+		//std::cout << "pnt1 : " << pnt1.x << " " << pnt1.y << std::endl;
+		//std::cout << "vec1 : " << vec1.x << " " << vec1.y << std::endl;
+		//std::cout << "pnt2 : " << pnt2.x << " " << pnt2.y << std::endl;
+		//std::cout << "vec2 : " << vec2.x << " " << vec2.y << std::endl;
+
+
+		/*std::cout << p_norm[0] << " " << p_norm[1] << " " << p_norm[2] << " transformed to" << std::endl;
+		std::cout << vec1.x << " " << vec1.y << std::endl;
+		std::cout << m_norm[0] << " " << m_norm[1] << " " << m_norm[2] << " transformed to" << std::endl;
+		std::cout << vec2.x << " " << vec2.y << std::endl;*/
+
+		float solver_nums[4] = {
+			-vec2.x, vec1.x,
+			-vec2.y, vec1.y
+		};
+
+		glm::mat2 solver = glm::make_mat2(solver_nums);
+		
+		// glm uses column major matrices so it needs to be transpose to fix multiplying issues
+		solver = glm::transpose(solver);
+
+		float det = glm::determinant(solver);
+
+
+		//std::cout << solver[0][0] << " " << solver[0][1] << std::endl;
+		//std::cout << solver[1][0] << " " << solver[1][1] << std::endl;
+		//std::cout << "det " << det << std::endl;
+		solver = solver / det;
+		//std::cout << solver[0][0] << " " << solver[0][1] << std::endl;
+		//std::cout << solver[1][0] << " " << solver[1][1] << std::endl;
+
+		glm::vec2 intercept_data = glm::vec2(
+			vec1.y * pnt1.x - vec1.x * pnt1.y,
+			vec2.y * pnt2.x - vec2.x * pnt2.y
+		);
+		
+		//std::cout << std::endl << intercept_data.x << " " << intercept_data.y << std::endl;
+
+		glm::vec2 pos = solver * intercept_data;
+
+		/*std::cout << "final: " << std::endl;
+		std::cout << pos[0] << " " << pos[1] << std::endl;*/
+
+		glm::vec3 global_pos;
+		
+		global_pos[axis0] = 0.0f;
+		global_pos[axis1] = pos[0];
+		global_pos[axis2] = pos[1];
+
+		//std::cout << global_pos[0] << " " << global_pos[1] << " " << global_pos[2] << std::endl;
+
+		//std::cout << std::endl;
+
+		return global_pos;
 	}
 	bool ray_intersection(glm::vec3 ray_pos, glm::vec3 ray_vector) {
 		// updates a bunch of things to account for change in model vector since construction
@@ -216,6 +297,9 @@ class Object {
 	glm::vec3 m_color = glm::vec3(0.463f, 0.275f, 0.137f);
 
 public:
+	Object() {
+
+	}
 	Object(float* verts, unsigned int num_verts) {
 		m_num_verts = num_verts;
 
@@ -271,12 +355,12 @@ public:
 		}
 		return intersected;
 	}
-	void plane_intersect(glm::vec3 p_pos, glm::vec3 p_norm) {
+	std::vector <glm::vec3> plane_intersect(glm::vec3 p_pos, glm::vec3 p_norm) {
+		std::vector <glm::vec3> pts;
 		for (unsigned int i = 0; i < m_num_polys; i++) {
-			if (m_polys[i].plane_intersection(p_pos, p_norm)) {
-
-			}
+			pts.push_back(m_polys[i].plane_intersection(p_pos, p_norm));
 		}
+		return pts;
 	}
 	void translate(glm::vec3 translate) {
 		m_translation = translate;

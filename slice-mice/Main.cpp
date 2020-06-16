@@ -1,4 +1,5 @@
 #include <iostream>
+#include<vector>
 
 #include <glad\glad.h>
 #include <GLFW\glfw3.h>
@@ -195,11 +196,31 @@ int main() {
 			obj.color(glm::vec3(1.0f, 0.0f, 0.0f));
 		}
 
+		Object test_cubes[12];
+		std::vector <glm::vec3> pts;
+
+
 		if (ln.is_cut_ready()) {
 			std::pair<glm::vec3, glm::vec3> plane;
 			plane = ln.cut_plane();
-			obj.plane_intersect(plane.first, plane.second);
+			pts = obj.plane_intersect(plane.first, plane.second);
+			//print_vec(pts);
+
+			for (int i = 0; i < 12; i++) {
+				print_vec(pts[i]);
+			}
 		}
+
+		for (int i = 0; i < 12; i++) {
+			//test_cubes[i] = Object(unit_cube, 36);
+			/*test_cubes[i].scale(glm::vec3(0.05));
+			test_cubes[i].translate(pts[i]);*/
+		}
+
+		/*for (int i = 0; i < 12; i++) {
+			test_cubes[i].update();
+			test_cubes[i].draw(object_shader);
+		}*/
 
 		lamp.update();
 		lamp.draw(lamp_shader);
